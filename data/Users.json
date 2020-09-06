@@ -1,16 +1,9 @@
 {
  "miko": {
   "username": "miko",
-  "email": "miko.f80",
-  "password": "1234",
+  "email": "miko.f80@gmail.com",
+  "password": 2071622424,
   "authored": [],
   "running": []
- },
- "wha": {
-  "username": "wha",
-  "email": "how",
-  "password": "pass",
-  "authored": null,
-  "running": null
  }
 }

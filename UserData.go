@@ -3,14 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
+	"os"
 	"sync"
 )
 
 type User struct {
 	Username string   `json:"username"`
 	Email    string   `json:"email"`
-	Password string   `json:"password"`
+	Password uint32   `json:"password"`
 	Authored []string `json:"authored"`
 	Running  []string `json:"running"`
 }
@@ -25,10 +27,30 @@ func newUser(u UserRegister) *User {
 	return &User{
 		Username: u.Username,
 		Email:    u.Email,
-		Password: u.Password,
+		Password: hashPassword(u.Password),
 		Authored: make([]string, 0),
 		Running:  make([]string, 0),
 	}
+}
+
+func hashPassword(p string) uint32 {
+	salt := os.Getenv("PASSWORD_SALT")
+	p = p + salt
+	h := fnv.New32a()
+	h.Write([]byte(p))
+	return h.Sum32()
+}
+
+func authUser(u string, p string) (User, bool) {
+	users := usersReader.read()
+	user, ok := users[u]
+	if !ok {
+		return User{}, false
+	}
+	if user.Password != hashPassword(p) {
+		return User{}, false
+	}
+	return user, true
 }
 
 type UserReader struct {
