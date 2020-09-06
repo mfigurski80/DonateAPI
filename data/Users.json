@@ -1,1 +1,16 @@
-{"miko": {"username":"miko", "email": "miko.f80", "password":"1234","authored": [], "running": []}}
+{
+ "miko": {
+  "username": "miko",
+  "email": "miko.f80",
+  "password": "1234",
+  "authored": [],
+  "running": []
+ },
+ "wha": {
+  "username": "wha",
+  "email": "how",
+  "password": "pass",
+  "authored": null,
+  "running": null
+ }
+}

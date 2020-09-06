@@ -8,11 +8,27 @@ import (
 )
 
 type User struct {
-	username string   `json:"username"`
-	email    string   `json:"email"`
-	password string   `json:"password"`
-	authored []string `json:"authored"`
-	running  []string `json:"running"`
+	Username string   `json:"username"`
+	Email    string   `json:"email"`
+	Password string   `json:"password"`
+	Authored []string `json:"authored"`
+	Running  []string `json:"running"`
+}
+
+type UserRegister struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func newUser(u UserRegister) *User {
+	return &User{
+		Username: u.Username,
+		Email:    u.Email,
+		Password: u.Password,
+		Authored: make([]string, 0),
+		Running:  make([]string, 0),
+	}
 }
 
 type UserReader struct {
