@@ -11,6 +11,7 @@ func main() {
 	r := mux.NewRouter()
 	addAuthSubrouter(r)
 	addUserSubrouter(r)
+	addJobSubrouter(r)
 
 	fmt.Println("Initialized. Serving on http://localhost:8080")
 	http.ListenAndServe(":8080", r)

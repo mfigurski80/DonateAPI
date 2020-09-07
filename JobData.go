@@ -9,26 +9,26 @@ import (
 
 type Job struct {
 	ID            string `json:"id"`
-	author        string `json:"author"`
-	description   string `json:"description"`
-	imageLocation string `json:"imageLocation"`
-	runner        string `json:"runner"`
+	Author        string `json:"author"`
+	Description   string `json:"description"`
+	ImageLocation string `json:"imageLocation"`
+	Runner        string `json:"runner"`
 }
 
 type JobReader struct {
 	path  string
-	cache []Job
+	cache map[string]Job
 	sync.Mutex
 }
 
 func newJobsReader(p string) *JobReader {
 	return &JobReader{
 		path:  p,
-		cache: make([]Job, 0),
+		cache: map[string]Job{},
 	}
 }
 
-func (r *JobReader) read() []Job {
+func (r *JobReader) read() map[string]Job {
 	r.Lock()
 	if len(r.cache) > 0 {
 		return r.cache
@@ -39,7 +39,7 @@ func (r *JobReader) read() []Job {
 		panic(fmt.Sprintf("Error opening file '%s'", r.path))
 	}
 
-	var jobs []Job
+	var jobs map[string]Job
 	json.Unmarshal(file, &jobs)
 
 	r.cache = jobs
@@ -47,7 +47,7 @@ func (r *JobReader) read() []Job {
 	return jobs
 }
 
-func (r *JobReader) write(jobs []Job) {
+func (r *JobReader) write(jobs map[string]Job) {
 	file, err := json.MarshalIndent(jobs, "", " ")
 	if err != nil {
 		panic(fmt.Sprintf("Error Marshaling jobs: %s", jobs))
@@ -62,3 +62,5 @@ func (r *JobReader) write(jobs []Job) {
 	r.cache = jobs
 	r.Unlock()
 }
+
+var jobsReader = newJobsReader("data/Jobs.json")
