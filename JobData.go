@@ -30,6 +30,7 @@ func newJobsReader(p string) *JobReader {
 
 func (r *JobReader) read() map[string]Job {
 	r.Lock()
+	defer r.Unlock()
 	if len(r.cache) > 0 {
 		return r.cache
 	}
@@ -43,7 +44,6 @@ func (r *JobReader) read() map[string]Job {
 	json.Unmarshal(file, &jobs)
 
 	r.cache = jobs
-	r.Unlock()
 	return jobs
 }
 

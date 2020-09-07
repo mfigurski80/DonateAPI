@@ -59,7 +59,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 	usersReader.write(users)
 
 	w.Header().Add("Content-Type", "application/json")
-	w.Write([]byte(fmt.Sprintf(`{"message": "success", "created": "%s"}`, user.Username)))
+	w.Write([]byte(fmt.Sprintf(`{"message": "success", "createdId": "%s"}`, user.Username)))
 }
 
 func addAuthSubrouter(r *mux.Router) {

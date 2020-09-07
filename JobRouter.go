@@ -94,10 +94,8 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	users[user.Username] = user
 	usersReader.write(users)
 
-	log("a")
 	w.Header().Add("Content-Type", "application/json")
-	w.Write([]byte(fmt.Sprintf(`{"message": "success", "created": "%s"}`, job.ID)))
-	log("DONE WITH POST")
+	w.Write([]byte(fmt.Sprintf(`{"message": "success", "createdId": "%s"}`, job.ID)))
 }
 
 func addJobSubrouter(r *mux.Router) {

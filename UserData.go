@@ -41,9 +41,9 @@ func authUser(u string, p string) (User, bool) {
 }
 
 type UserReader struct {
-	path  string
-	cache map[string]User
+	path string
 	sync.Mutex
+	cache map[string]User
 }
 
 func newUsersReader(p string) *UserReader {
@@ -55,6 +55,7 @@ func newUsersReader(p string) *UserReader {
 
 func (r *UserReader) read() map[string]User {
 	r.Lock()
+	defer r.Unlock()
 	if len(r.cache) > 0 {
 		return r.cache
 	}
@@ -68,7 +69,6 @@ func (r *UserReader) read() map[string]User {
 	json.Unmarshal(file, &users)
 
 	r.cache = users
-	r.Unlock()
 	return users
 }
 
