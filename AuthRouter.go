@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -58,7 +59,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 	usersReader.write(users)
 
 	w.Header().Add("Content-Type", "application/json")
-	w.Write([]byte(`{"message": "success"}`))
+	w.Write([]byte(fmt.Sprintf(`{"message": "success", "created": "%s"}`, user.Username)))
 }
 
 func addAuthSubrouter(r *mux.Router) {

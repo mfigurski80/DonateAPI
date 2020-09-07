@@ -75,7 +75,7 @@ func (r *UserReader) read() map[string]User {
 func (r *UserReader) write(users map[string]User) {
 	file, err := json.MarshalIndent(users, "", " ")
 	if err != nil {
-		panic(fmt.Sprintf("Error marshaling json: %s", users))
+		panic(fmt.Sprintf("Error marshaling json: %v", users))
 	}
 
 	err = ioutil.WriteFile(r.path, file, 0644)
