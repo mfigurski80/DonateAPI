@@ -35,6 +35,9 @@ func newUser(u UserRegister) *User {
 
 func hashPassword(p string) uint32 {
 	salt := os.Getenv("PASSWORD_SALT")
+	if salt == "" {
+		panic("env variable PASSWORD_SALT not set")
+	}
 	p = p + salt
 	h := fnv.New32a()
 	h.Write([]byte(p))
