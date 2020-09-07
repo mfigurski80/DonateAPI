@@ -8,6 +8,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type UserRegister struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func newUser(u UserRegister) *User {
+	return &User{
+		Username: u.Username,
+		Email:    u.Email,
+		Password: hashPassword(u.Password),
+		Authored: make([]string, 0),
+		Running:  make([]string, 0),
+	}
+}
+
+// POST `/register` creates a new user
 func handleRegister(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
 	bodyBytes, err := ioutil.ReadAll(r.Body)

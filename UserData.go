@@ -17,22 +17,6 @@ type User struct {
 	Running  []string `json:"running"`
 }
 
-type UserRegister struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func newUser(u UserRegister) *User {
-	return &User{
-		Username: u.Username,
-		Email:    u.Email,
-		Password: hashPassword(u.Password),
-		Authored: make([]string, 0),
-		Running:  make([]string, 0),
-	}
-}
-
 func hashPassword(p string) uint32 {
 	salt := os.Getenv("PASSWORD_SALT")
 	if salt == "" {
