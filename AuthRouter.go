@@ -9,13 +9,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type UserRegister struct {
+type PostUserStruct struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func newUser(u UserRegister) *User {
+func newUser(u PostUserStruct) *User {
 	return &User{
 		Username: u.Username,
 		Email:    u.Email,
@@ -41,7 +41,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user UserRegister
+	var user PostUserStruct
 	err = json.Unmarshal(bodyBytes, &user)
 	if err != nil {
 		BadRequest(w, err.Error())
