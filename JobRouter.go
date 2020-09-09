@@ -42,11 +42,28 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 // GET `/jobs/{id}` returns job with given id
 func getJob(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
+	id := mux.Vars(r)["id"]
+
+	jobs := jobsReader.read()
+	job, ok := jobs[id]
+	if !ok {
+		BadRequest(w, "Id does not exist")
+		return
+	}
+	jsonBytes, err := json.Marshal(job)
+	if err != nil {
+		InternalServerError(w, err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(jsonBytes)
 }
 
 // POST `/jobs` creates a new job with given data
 func postJob(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
+	// auth user
 	username, pass, ok := r.BasicAuth()
 	if !ok {
 		Unauthorized(w)
@@ -58,19 +75,18 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// read json
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		BadRequest(w, err.Error())
 		return
 	}
-
 	ct := r.Header.Get("Content-Type")
 	if ct != "application/json" {
 		UnsupportedMediaType(w)
 		return
 	}
-
 	var jobData PostJobStruct
 	err = json.Unmarshal(bodyBytes, &jobData)
 	if err != nil {
@@ -79,6 +95,7 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	}
 	job := newJob(jobData, user.Username)
 
+	// add to jobs
 	jobs := jobsReader.read()
 	_, ok = jobs[job.ID]
 	if ok {
@@ -94,6 +111,7 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	users[user.Username] = user
 	usersReader.write(users)
 
+	// respond
 	w.Header().Add("Content-Type", "application/json")
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "createdId": "%s"}`, job.ID)))
 }
