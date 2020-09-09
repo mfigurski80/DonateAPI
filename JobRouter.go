@@ -42,20 +42,24 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 // GET `/jobs/{id}` returns job with given id
 func getJob(w http.ResponseWriter, r *http.Request) {
 	logRequest(r)
-	id := mux.Vars(r)["id"]
 
+	// find referenced job
+	id := mux.Vars(r)["id"]
 	jobs := jobsReader.read()
 	job, ok := jobs[id]
 	if !ok {
 		BadRequest(w, "Id does not exist")
 		return
 	}
+
+	// convert to json
 	jsonBytes, err := json.Marshal(job)
 	if err != nil {
 		InternalServerError(w, err.Error())
 		return
 	}
 
+	// respond
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(jsonBytes)
 }
@@ -116,9 +120,46 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "createdId": "%s"}`, job.ID)))
 }
 
+// DELETE /jobs/{id}
+func deleteJob(w http.ResponseWriter, r *http.Request) {
+	logRequest(r)
+	// auth user
+	username, pass, ok := r.BasicAuth()
+	if !ok {
+		Unauthorized(w)
+		return
+	}
+	user, ok := authUser(username, pass)
+	if !ok {
+		Unauthorized(w)
+		return
+	}
+
+	// find referenced job and delete
+	id := mux.Vars(r)["id"]
+	jobs := jobsReader.read()
+	job, ok := jobs[id]
+	if !ok {
+		BadRequest(w, "Id does not exist")
+		return
+	}
+	if job.Author != user.Username {
+		Unauthorized(w)
+		return
+	}
+	delete(jobs, job.ID)
+	jobsReader.write(jobs)
+
+	// respond
+	w.Header().Add("Content-Type", "application/json")
+	w.Write([]byte(`{"message": "success"}`))
+}
+
 func addJobSubrouter(r *mux.Router) {
 	jobRouter := r.PathPrefix("/jobs").Subrouter()
+
 	jobRouter.HandleFunc("", getJobs).Methods(http.MethodGet)
-	jobRouter.HandleFunc("/{id}", getJob).Methods(http.MethodGet)
 	jobRouter.HandleFunc("", postJob).Methods(http.MethodPost)
+	jobRouter.HandleFunc("/{id}", getJob).Methods(http.MethodGet)
+	jobRouter.HandleFunc("/{id}", deleteJob).Methods(http.MethodDelete)
 }
