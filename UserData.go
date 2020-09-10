@@ -67,6 +67,9 @@ func (r *UserReader) read() map[string]User {
 
 	var users map[string]User
 	json.Unmarshal(file, &users)
+	if len(users) == 0 {
+		users = map[string]User{}
+	}
 
 	r.cache = users
 	return users

@@ -10,6 +10,6 @@ Works on a distributed system built around transferring docker images.
 
 ## Dockerization
 
-`docker build --build-arg salt=<RANDOM SALT HERE> -t donate-api`
+`docker build --build-arg salt=<RANDOM SALT HERE> -t donate-api .`
 
 `docker run -it -p 8080:8080 donate-api`

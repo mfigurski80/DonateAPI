@@ -42,6 +42,9 @@ func (r *JobReader) read() map[string]Job {
 
 	var jobs map[string]Job
 	json.Unmarshal(file, &jobs)
+	if len(jobs) == 0 {
+		jobs = map[string]Job{}
+	}
 
 	r.cache = jobs
 	return jobs
@@ -63,4 +66,4 @@ func (r *JobReader) write(jobs map[string]Job) {
 	r.Unlock()
 }
 
-var jobsReader = newJobsReader("data/Jobs.json")
+var jobsReader = newJobsReader("./data/Jobs.json")
