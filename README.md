@@ -6,8 +6,9 @@ Works on a distributed system built around transferring docker images.
 
 ## Explanation of Common Concepts in final concept
 
-A singular job is a datum with 
+A singular job is a datum with:
 
+* unique id
 * pointer to original dockerhub image (containing the job)
 * pointer to completed dockerhub image
 * list of pointers to partially completed images, along with total work
@@ -19,7 +20,7 @@ A singular job is a datum with
 * author
 * runner list
 
-A singlar user is a datum with
+A singlar user is a datum with:
 
 * username
 * hashed password

@@ -12,17 +12,21 @@ import (
 )
 
 type postJobStruct struct {
-	Description   string `json:"description"`
-	ImageLocation string `json:"imageLocation"`
+	Title                string `json:"title"`
+	Description          string `json:"description"`
+	OriginalImage        string `json:"originalImage"`
+	AllowMultipleRunners bool   `json:"allowMultipleRunners"`
 }
 
 func newJob(s postJobStruct, author string) *state.Job {
+	time := time.Now().UnixNano()
 	return &state.Job{
-		ID:            fmt.Sprintf("%d", time.Now().UnixNano()),
-		Description:   s.Description,
-		ImageLocation: s.ImageLocation,
-		Author:        author,
-		Runner:        "",
+		ID:                   fmt.Sprintf("%d", time),
+		Author:               author,
+		Title:                s.Title,
+		Description:          s.Description,
+		OriginalImage:        s.OriginalImage,
+		AllowMultipleRunners: s.AllowMultipleRunners,
 	}
 }
 
@@ -179,11 +183,11 @@ func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 		badRequest(w, "Id does not exist")
 		return
 	}
-	if job.Runner != "" {
+	if !job.AllowMultipleRunners && len(job.Runners) > 0 {
 		badRequest(w, "This job is already being run")
 		return
 	}
-	job.Runner = username
+	job.Runners = append(job.Runners, username)
 	jobs[id] = job
 	state.JobState.Write(jobs)
 
@@ -198,55 +202,55 @@ func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, id)))
 }
 
-// PUT /jobs/{id}/checkin
-func putJobCheckin(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
-	// auth user
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
-	if !ok {
-		unauthorized(w)
-		return
-	}
+// // PUT /jobs/{id}/checkin
+// func putJobCheckin(w http.ResponseWriter, r *http.Request) {
+// 	state.LogRequest(r)
+// 	// auth user
+// 	username, pass, ok := r.BasicAuth()
+// 	if !ok {
+// 		unauthorized(w)
+// 		return
+// 	}
+// 	user, ok := state.UserState.AuthUser(username, pass)
+// 	if !ok {
+// 		unauthorized(w)
+// 		return
+// 	}
 
-	// register runner within job
-	id := mux.Vars(r)["id"]
-	jobs := state.JobState.Read()
-	job, ok := jobs[id]
-	if !ok {
-		badRequest(w, "Id does not exist")
-		return
-	}
-	if job.Runner != username {
-		badRequest(w, "Your are not currently running this job")
-		return
-	}
-	job.Runner = ""
-	jobs[job.ID] = job
-	state.JobState.Write(jobs)
+// 	// register runner within job
+// 	id := mux.Vars(r)["id"]
+// 	jobs := state.JobState.Read()
+// 	job, ok := jobs[id]
+// 	if !ok {
+// 		badRequest(w, "Id does not exist")
+// 		return
+// 	}
+// 	if job.Runner != username {
+// 		badRequest(w, "Your are not currently running this job")
+// 		return
+// 	}
+// 	job.Runner = ""
+// 	jobs[job.ID] = job
+// 	state.JobState.Write(jobs)
 
-	// update user ref
-	for i, jobID := range user.Running {
-		if jobID != id {
-			continue
-		}
-		user.Running[i] = user.Running[len(user.Running)-1]
-		user.Running[len(user.Running)-1] = ""
-		user.Running = user.Running[:len(user.Running)-1]
-		break
-	}
-	users := state.UserState.Read()
-	users[username] = user
-	state.UserState.Write(users)
+// 	// update user ref
+// 	for i, jobID := range user.Running {
+// 		if jobID != id {
+// 			continue
+// 		}
+// 		user.Running[i] = user.Running[len(user.Running)-1]
+// 		user.Running[len(user.Running)-1] = ""
+// 		user.Running = user.Running[:len(user.Running)-1]
+// 		break
+// 	}
+// 	users := state.UserState.Read()
+// 	users[username] = user
+// 	state.UserState.Write(users)
 
-	// respond
-	w.Header().Add("Content-Type", "application/json")
-	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, id)))
-}
+// 	// respond
+// 	w.Header().Add("Content-Type", "application/json")
+// 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, id)))
+// }
 
 func addJobSubrouter(r *mux.Router) {
 	jobRouter := r.PathPrefix("/jobs").Subrouter()
@@ -255,6 +259,6 @@ func addJobSubrouter(r *mux.Router) {
 	jobRouter.HandleFunc("", postJob).Methods(http.MethodPost)
 	jobRouter.HandleFunc("/{id}", getJob).Methods(http.MethodGet)
 	jobRouter.HandleFunc("/{id}", deleteJob).Methods(http.MethodDelete)
-	jobRouter.HandleFunc("/{id}/checkin", putJobCheckin).Methods(http.MethodPut)
 	jobRouter.HandleFunc("/{id}/checkout", putJobCheckout).Methods(http.MethodPost)
+	// jobRouter.HandleFunc("/{id}/checkin", putJobCheckin).Methods(http.MethodPut)
 }

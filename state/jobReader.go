@@ -48,7 +48,7 @@ func (r *jobReader) Read() map[string]Job {
 func (r *jobReader) Write(jobs map[string]Job) {
 	file, err := json.MarshalIndent(jobs, "", " ")
 	if err != nil {
-		panic(fmt.Sprintf("Error Marshaling jobs: %s", jobs))
+		panic(fmt.Sprintf("Error Marshaling jobs: %v", jobs))
 	}
 
 	err = ioutil.WriteFile(r.path, file, 0644)

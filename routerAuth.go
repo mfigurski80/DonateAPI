@@ -19,7 +19,6 @@ type postUserStruct struct {
 func newUser(u postUserStruct) *state.User {
 	return &state.User{
 		Username: u.Username,
-		Email:    u.Email,
 		Password: state.HashPassword(u.Password),
 		Authored: make([]string, 0),
 		Running:  make([]string, 0),

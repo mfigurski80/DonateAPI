@@ -66,13 +66,10 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// add user
+	// change user
 	if !(newUserData.Username == user.Username || newUserData.Username == "") {
 		badRequest(w, "Username cannot be changed once set")
 		return
-	}
-	if newUserData.Email != "" {
-		user.Email = newUserData.Email
 	}
 	if newUserData.Password != "" {
 		user.Password = state.HashPassword(newUserData.Password)
