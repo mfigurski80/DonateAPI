@@ -27,6 +27,24 @@ A singlar user is a datum with:
 * list of authored jobs
 * list of currently running jobs
 
+## Paths Supported
+
+### Users
+
+* [x] `POST /register`
+* [x] `GET /user`
+* [x] `PUT /user`
+* [x] `DELETE /user`
+
+### Jobs
+
+* [x] `GET /job`
+* [x] `POST /job`
+* [x] `GET /job/{id}`
+* [x] `DELETE /job/{id}`
+* [ ] `PUT /job/{id}/take`
+* [ ] `PUT /job/{id}/return`
+
 ## Building
 
 `go build -o main .`
