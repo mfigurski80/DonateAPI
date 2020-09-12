@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/mfigurski/DonateAPI/state"
+	"github.com/mfigurski80/DonateAPI/state"
 )
 
 func main() {

@@ -16,7 +16,7 @@ type postJobStruct struct {
 	ImageLocation string `json:"imageLocation"`
 }
 
-func newJob(s PostJobStruct, author string) *state.Job {
+func newJob(s postJobStruct, author string) *state.Job {
 	return &state.Job{
 		ID:            fmt.Sprintf("%d", time.Now().UnixNano()),
 		Description:   s.Description,
@@ -33,7 +33,7 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 
 	jsonBytes, err := json.Marshal(jobs)
 	if err != nil {
-		InternalServerError(w, err.Error())
+		internalServerError(w, err.Error())
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -49,14 +49,14 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 	jobs := state.JobState.Read()
 	job, ok := jobs[id]
 	if !ok {
-		BadRequest(w, "Id does not exist")
+		badRequest(w, "Id does not exist")
 		return
 	}
 
 	// convert to json
 	jsonBytes, err := json.Marshal(job)
 	if err != nil {
-		InternalServerError(w, err.Error())
+		internalServerError(w, err.Error())
 		return
 	}
 
@@ -71,12 +71,12 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	// auth user
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
@@ -84,37 +84,37 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		BadRequest(w, err.Error())
+		badRequest(w, err.Error())
 		return
 	}
 	ct := r.Header.Get("Content-Type")
 	if ct != "application/json" {
-		UnsupportedMediaType(w)
+		unsupportedMediaType(w)
 		return
 	}
-	var jobData PostJobStruct
+	var jobData postJobStruct
 	err = json.Unmarshal(bodyBytes, &jobData)
 	if err != nil {
-		BadRequest(w, err.Error())
+		badRequest(w, err.Error())
 		return
 	}
 	job := newJob(jobData, user.Username)
 
 	// add to jobs
-	jobs := jobsReader.read()
+	jobs := state.JobState.Read()
 	_, ok = jobs[job.ID]
 	if ok {
-		BadRequest(w, "Job already exists")
+		badRequest(w, "Job already exists")
 		return
 	}
 
 	jobs[job.ID] = *job
-	jobsReader.write(jobs)
+	state.JobState.Write(jobs)
 
 	user.Authored = append(user.Authored, job.ID)
-	users := usersReader.read()
+	users := state.UserState.Read()
 	users[user.Username] = user
-	usersReader.write(users)
+	state.UserState.Write(users)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")
@@ -123,33 +123,33 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /jobs/{id}
 func deleteJob(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	// auth user
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
 	// find referenced job and delete
 	id := mux.Vars(r)["id"]
-	jobs := jobsReader.read()
+	jobs := state.JobState.Read()
 	job, ok := jobs[id]
 	if !ok {
-		BadRequest(w, "Id does not exist")
+		badRequest(w, "Id does not exist")
 		return
 	}
 	if job.Author != user.Username {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 	delete(jobs, job.ID)
-	jobsReader.write(jobs)
+	state.JobState.Write(jobs)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")
@@ -158,40 +158,40 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 
 // PUT /jobs/{id}/checkout
 func putJobCheckout(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	// auth user
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
 	// register runner within job
 	id := mux.Vars(r)["id"]
-	jobs := jobsReader.read()
+	jobs := state.JobState.Read()
 	job, ok := jobs[id]
 	if !ok {
-		BadRequest(w, "Id does not exist")
+		badRequest(w, "Id does not exist")
 		return
 	}
 	if job.Runner != "" {
-		BadRequest(w, "This job is already being run")
+		badRequest(w, "This job is already being run")
 		return
 	}
 	job.Runner = username
 	jobs[id] = job
-	jobsReader.write(jobs)
+	state.JobState.Write(jobs)
 
 	// update user ref
 	user.Running = append(user.Running, id)
-	users := usersReader.read()
+	users := state.UserState.Read()
 	users[username] = user
-	usersReader.write(users)
+	state.UserState.Write(users)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")
@@ -200,38 +200,38 @@ func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 
 // PUT /jobs/{id}/checkin
 func putJobCheckin(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	// auth user
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
 	// register runner within job
 	id := mux.Vars(r)["id"]
-	jobs := jobsReader.read()
+	jobs := state.JobState.Read()
 	job, ok := jobs[id]
 	if !ok {
-		BadRequest(w, "Id does not exist")
+		badRequest(w, "Id does not exist")
 		return
 	}
 	if job.Runner != username {
-		BadRequest(w, "Your are not currently running this job")
+		badRequest(w, "Your are not currently running this job")
 		return
 	}
 	job.Runner = ""
 	jobs[job.ID] = job
-	jobsReader.write(jobs)
+	state.JobState.Write(jobs)
 
 	// update user ref
-	for i, jobId := range user.Running {
-		if jobId != id {
+	for i, jobID := range user.Running {
+		if jobID != id {
 			continue
 		}
 		user.Running[i] = user.Running[len(user.Running)-1]
@@ -239,9 +239,9 @@ func putJobCheckin(w http.ResponseWriter, r *http.Request) {
 		user.Running = user.Running[:len(user.Running)-1]
 		break
 	}
-	users := usersReader.read()
+	users := state.UserState.Read()
 	users[username] = user
-	usersReader.write(users)
+	state.UserState.Write(users)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")

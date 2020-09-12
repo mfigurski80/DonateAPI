@@ -7,19 +7,20 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mfigurski80/DonateAPI/state"
 )
 
-type PostUserStruct struct {
+type postUserStruct struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func newUser(u PostUserStruct) *User {
-	return &User{
+func newUser(u postUserStruct) *state.User {
+	return &state.User{
 		Username: u.Username,
 		Email:    u.Email,
-		Password: hashPassword(u.Password),
+		Password: state.HashPassword(u.Password),
 		Authored: make([]string, 0),
 		Running:  make([]string, 0),
 	}
@@ -27,36 +28,36 @@ func newUser(u PostUserStruct) *User {
 
 // POST `/register` creates a new user
 func handleRegister(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		BadRequest(w, err.Error())
+		badRequest(w, err.Error())
 		return
 	}
 
 	ct := r.Header.Get("Content-Type")
 	if ct != "application/json" {
-		UnsupportedMediaType(w)
+		unsupportedMediaType(w)
 		return
 	}
 
-	var user PostUserStruct
+	var user postUserStruct
 	err = json.Unmarshal(bodyBytes, &user)
 	if err != nil {
-		BadRequest(w, err.Error())
+		badRequest(w, err.Error())
 		return
 	}
 
-	users := usersReader.read()
+	users := state.UserState.Read()
 	_, ok := users[user.Username]
 	if ok {
-		BadRequest(w, "User already exists")
+		badRequest(w, "User already exists")
 		return
 	}
 
 	users[user.Username] = *(newUser(user))
-	usersReader.write(users)
+	state.UserState.Write(users)
 
 	w.Header().Add("Content-Type", "application/json")
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "createdId": "%s"}`, user.Username)))

@@ -6,25 +6,26 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mfigurski80/DonateAPI/state"
 )
 
 // GET `/user` returns data on current user
 func getUser(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
 	jsonBytes, err := json.Marshal(user)
 	if err != nil {
-		InternalServerError(w, err.Error())
+		internalServerError(w, err.Error())
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -33,16 +34,16 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 // PUT `/user` allows updates to current user's data
 func putUser(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	// authorize
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
@@ -50,36 +51,36 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		BadRequest(w, err.Error())
+		badRequest(w, err.Error())
 		return
 	}
 	ct := r.Header.Get("Content-Type")
 	if ct != "application/json" {
-		UnsupportedMediaType(w)
+		unsupportedMediaType(w)
 		return
 	}
-	var newUserData PostUserStruct
+	var newUserData postUserStruct
 	err = json.Unmarshal(bodyBytes, &newUserData)
 	if err != nil {
-		BadRequest(w, err.Error())
+		badRequest(w, err.Error())
 		return
 	}
 
 	// add user
 	if !(newUserData.Username == user.Username || newUserData.Username == "") {
-		BadRequest(w, "Username cannot be changed once set")
+		badRequest(w, "Username cannot be changed once set")
 		return
 	}
 	if newUserData.Email != "" {
 		user.Email = newUserData.Email
 	}
 	if newUserData.Password != "" {
-		user.Password = hashPassword(newUserData.Password)
+		user.Password = state.HashPassword(newUserData.Password)
 	}
 
-	users := usersReader.read()
+	users := state.UserState.Read()
 	users[user.Username] = user
-	usersReader.write(users)
+	state.UserState.Write(users)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")
@@ -88,23 +89,23 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 // DELETE `/user` deletes user data and jobs associated with current user
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	// authorize
 	username, pass, ok := r.BasicAuth()
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
-		Unauthorized(w)
+		unauthorized(w)
 		return
 	}
 
 	// delete user
-	users := usersReader.read()
+	users := state.UserState.Read()
 	delete(users, user.Username)
-	usersReader.write(users)
+	state.UserState.Write(users)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")
