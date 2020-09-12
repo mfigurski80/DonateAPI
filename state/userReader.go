@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"sync"
 )
@@ -33,6 +34,14 @@ func (r *userReader) AuthUser(u string, p string) (User, bool) {
 		return User{}, false
 	}
 	return user, true
+}
+
+func (r *userReader) AuthRequest(req *http.Request) (User, bool) {
+	username, pass, ok := req.BasicAuth()
+	if !ok {
+		return User{}, false
+	}
+	return r.AuthUser(username, pass)
 }
 
 func (r *userReader) Read() map[string]User {

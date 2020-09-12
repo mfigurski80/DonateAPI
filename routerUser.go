@@ -12,17 +12,14 @@ import (
 // GET `/user` returns data on current user
 func getUser(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
+	// authorize
+	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
 		unauthorized(w)
 		return
 	}
 
+	// write json
 	jsonBytes, err := json.Marshal(user)
 	if err != nil {
 		internalServerError(w, err.Error())
@@ -36,12 +33,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func putUser(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
 	// authorize
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
+	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
 		unauthorized(w)
 		return
@@ -88,12 +80,7 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 func deleteUser(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
 	// authorize
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
+	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
 		unauthorized(w)
 		return

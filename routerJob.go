@@ -23,6 +23,7 @@ func newJob(s postJobStruct, author string) *state.Job {
 	return &state.Job{
 		ID:                   fmt.Sprintf("%d", time),
 		Author:               author,
+		Timestamp:            time,
 		Title:                s.Title,
 		Description:          s.Description,
 		OriginalImage:        s.OriginalImage,
@@ -73,12 +74,7 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 func postJob(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
 	// auth user
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
+	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
 		unauthorized(w)
 		return
@@ -129,12 +125,7 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 func deleteJob(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
 	// auth user
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
+	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
 		unauthorized(w)
 		return
@@ -164,12 +155,7 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
 	// auth user
-	username, pass, ok := r.BasicAuth()
-	if !ok {
-		unauthorized(w)
-		return
-	}
-	user, ok := state.UserState.AuthUser(username, pass)
+	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
 		unauthorized(w)
 		return
@@ -187,14 +173,14 @@ func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 		badRequest(w, "This job is already being run")
 		return
 	}
-	job.Runners = append(job.Runners, username)
+	job.Runners = append(job.Runners, user.Username)
 	jobs[id] = job
 	state.JobState.Write(jobs)
 
 	// update user ref
 	user.Running = append(user.Running, id)
 	users := state.UserState.Read()
-	users[username] = user
+	users[user.Username] = user
 	state.UserState.Write(users)
 
 	// respond
@@ -206,12 +192,7 @@ func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 // func putJobCheckin(w http.ResponseWriter, r *http.Request) {
 // 	state.LogRequest(r)
 // 	// auth user
-// 	username, pass, ok := r.BasicAuth()
-// 	if !ok {
-// 		unauthorized(w)
-// 		return
-// 	}
-// 	user, ok := state.UserState.AuthUser(username, pass)
+//  user, ok := state.UserState.AuthRequest(r)
 // 	if !ok {
 // 		unauthorized(w)
 // 		return
