@@ -1,34 +1,29 @@
-package main
+package state
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sync"
 )
 
-type Job struct {
-	ID            string `json:"id"`
-	Author        string `json:"author"`
-	Description   string `json:"description"`
-	ImageLocation string `json:"imageLocation"`
-	Runner        string `json:"runner"`
-}
-
-type JobReader struct {
+type jobReader struct {
 	path  string
 	cache map[string]Job
 	sync.Mutex
 }
 
-func newJobsReader(p string) *JobReader {
-	return &JobReader{
+func newJobsReader(p string) *jobReader {
+	os.OpenFile(p, os.O_RDONLY|os.O_CREATE, 0666)
+
+	return &jobReader{
 		path:  p,
 		cache: map[string]Job{},
 	}
 }
 
-func (r *JobReader) read() map[string]Job {
+func (r *jobReader) Read() map[string]Job {
 	r.Lock()
 	defer r.Unlock()
 	if len(r.cache) > 0 {
@@ -50,7 +45,7 @@ func (r *JobReader) read() map[string]Job {
 	return jobs
 }
 
-func (r *JobReader) write(jobs map[string]Job) {
+func (r *jobReader) Write(jobs map[string]Job) {
 	file, err := json.MarshalIndent(jobs, "", " ")
 	if err != nil {
 		panic(fmt.Sprintf("Error Marshaling jobs: %s", jobs))
@@ -66,4 +61,5 @@ func (r *JobReader) write(jobs map[string]Job) {
 	r.Unlock()
 }
 
-var jobsReader = newJobsReader("./data/Jobs.json")
+// JobState - allows persisting job data
+var JobState = newJobsReader("./data/Jobs.json")

@@ -1,4 +1,4 @@
-package main
+package state
 
 import (
 	"fmt"
@@ -6,10 +6,12 @@ import (
 	"time"
 )
 
-func log(s string) {
+// Log - logs given string at time
+func Log(s string) {
 	fmt.Printf("[%s] %s\n", time.Now().Format("Jan 02 15:04:05"), s)
 }
 
-func logRequest(r *http.Request) {
+// LogRequest - logs given request at time
+func LogRequest(r *http.Request) {
 	fmt.Printf("[%s] %s %s\n", time.Now().Format("Jan 02 15:04:05"), r.Method, r.URL)
 }

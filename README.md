@@ -4,6 +4,28 @@ Central API for a larger **Donate** project aimed at allowing people to donae co
 
 Works on a distributed system built around transferring docker images.
 
+## Explanation of Common Concepts in final concept
+
+A singular job is a datum with 
+
+* pointer to original dockerhub image (containing the job)
+* pointer to completed dockerhub image
+* list of pointers to partially completed images, along with total work
+* title
+* description
+* creation timestamp
+* mark for completion
+* mark for allowing multiple runners
+* author
+* runner list
+
+A singlar user is a datum with
+
+* username
+* hashed password
+* list of authored jobs
+* list of currently running jobs
+
 ## Building
 
 `go build -o main .`

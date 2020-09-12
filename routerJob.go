@@ -8,15 +8,16 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mfigurski80/DonateAPI/state"
 )
 
-type PostJobStruct struct {
+type postJobStruct struct {
 	Description   string `json:"description"`
 	ImageLocation string `json:"imageLocation"`
 }
 
-func newJob(s PostJobStruct, author string) *Job {
-	return &Job{
+func newJob(s PostJobStruct, author string) *state.Job {
+	return &state.Job{
 		ID:            fmt.Sprintf("%d", time.Now().UnixNano()),
 		Description:   s.Description,
 		ImageLocation: s.ImageLocation,
@@ -27,8 +28,8 @@ func newJob(s PostJobStruct, author string) *Job {
 
 // GET `/jobs` returns list of all *active* jobs (waiting for runners)
 func getJobs(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
-	jobs := jobsReader.read()
+	state.LogRequest(r)
+	jobs := state.JobState.Read()
 
 	jsonBytes, err := json.Marshal(jobs)
 	if err != nil {
@@ -41,11 +42,11 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 
 // GET `/jobs/{id}` returns job with given id
 func getJob(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 
 	// find referenced job
 	id := mux.Vars(r)["id"]
-	jobs := jobsReader.read()
+	jobs := state.JobState.Read()
 	job, ok := jobs[id]
 	if !ok {
 		BadRequest(w, "Id does not exist")
@@ -66,14 +67,14 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 
 // POST `/jobs` creates a new job with given data
 func postJob(w http.ResponseWriter, r *http.Request) {
-	logRequest(r)
+	state.LogRequest(r)
 	// auth user
 	username, pass, ok := r.BasicAuth()
 	if !ok {
 		Unauthorized(w)
 		return
 	}
-	user, ok := authUser(username, pass)
+	user, ok := state.UserState.AuthUser(username, pass)
 	if !ok {
 		Unauthorized(w)
 		return
