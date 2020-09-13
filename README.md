@@ -51,6 +51,6 @@ A singlar user is a datum with:
 
 ## Dockerization
 
-`docker build --build-arg salt=<RANDOM SALT HERE> -t donate-api .`
+`docker build -t donate-api -t mfigurski80/donate-api .`
 
-`docker run -it -p 8080:8080 donate-api`
+`docker-compose up`
