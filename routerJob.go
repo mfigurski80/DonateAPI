@@ -140,13 +140,15 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 	delete(jobs, job.ID)
 	state.JobState.Write(jobs)
 
-	// remove all user references
+	// remove all runner and author references
 	users := state.UserState.Read()
 	for _, runner := range job.Runners {
 		u := users[runner]
 		u.Running = remove(u.Running, find(u.Running, job.ID))
 		users[runner] = u
 	}
+	author := users[job.Author]
+	author.Authored = remove(author.Authored, find(author.Authored, job.ID))
 	state.UserState.Write(users)
 
 	// respond

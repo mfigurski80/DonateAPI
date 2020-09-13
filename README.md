@@ -42,8 +42,8 @@ A singlar user is a datum with:
 * [x] `POST /job`
 * [x] `GET /job/{id}`
 * [x] `DELETE /job/{id}`
-* [ ] `PUT /job/{id}/take`
-* [ ] `PUT /job/{id}/return`
+* [x] `PUT /job/{id}/take`
+* [x] `PUT /job/{id}/return`
 
 ## Building
 
