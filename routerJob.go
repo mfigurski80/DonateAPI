@@ -27,7 +27,6 @@ func newJob(s types.NewJobStruct, author string) *types.Job {
 
 // GET `/jobs` returns list of all *active* jobs (waiting for runners)
 func getJobs(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	jobs := state.JobState.Read()
 
 	jsonBytes, err := json.Marshal(jobs)
@@ -41,8 +40,6 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 
 // GET `/jobs/{id}` returns job with given id
 func getJob(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
-
 	// find referenced job
 	id := mux.Vars(r)["id"]
 	jobs := state.JobState.Read()
@@ -66,7 +63,6 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 
 // POST `/jobs` creates a new job with given data
 func postJob(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
@@ -117,7 +113,6 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 
 // DELETE /jobs/{id}
 func deleteJob(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
@@ -158,7 +153,6 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 
 // PUT /jobs/{id}/take
 func putJobTake(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
@@ -196,7 +190,6 @@ func putJobTake(w http.ResponseWriter, r *http.Request) {
 // PUT /jobs/{id}/return
 // checks back in the sent image and disassociates user from it
 func putJobReturn(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {

@@ -22,7 +22,6 @@ func newUser(u types.PostUserStruct) *types.User {
 
 // POST `/register` creates a new user
 func handleRegister(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {

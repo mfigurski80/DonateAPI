@@ -12,7 +12,6 @@ import (
 
 // GET `/user` returns data on current user
 func getUser(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// authorize
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
@@ -32,7 +31,6 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 // PUT `/user` allows updates to current user's data
 func putUser(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// authorize
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {
@@ -79,7 +77,6 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 // DELETE `/user` deletes user data and jobs associated with current user
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	state.LogRequest(r)
 	// authorize
 	user, ok := state.UserState.AuthRequest(r)
 	if !ok {

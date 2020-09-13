@@ -13,6 +13,7 @@ func main() {
 	addAuthSubrouter(r)
 	addUserSubrouter(r)
 	addJobSubrouter(r)
+	r.Use(loggingMiddleware)
 
 	state.Log("Initialized. Serving on http://localhost:8080")
 	http.ListenAndServe(":8080", r)
