@@ -87,10 +87,25 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// delete user
+	// update all data
 	users := state.UserState.Read()
 	delete(users, user.Username)
+	jobs := state.JobState.Read()
+	for _, id := range user.Running { // remove running references
+		job := jobs[id]
+		job.Runners = remove(job.Runners, find(job.Runners, user.Username))
+		jobs[id] = job
+	}
+	for _, id := range user.Authored { // remove authored jobs and references from runners
+		job := jobs[id]
+		for _, runner := range job.Runners {
+			user := users[runner]
+			user.Running = remove(user.Running, find(user.Running, id))
+		}
+		delete(jobs, id)
+	}
 	state.UserState.Write(users)
+	state.JobState.Write(jobs)
 
 	// respond
 	w.Header().Add("Content-Type", "application/json")
