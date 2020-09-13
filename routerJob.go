@@ -11,14 +11,19 @@ import (
 	"github.com/mfigurski80/DonateAPI/state"
 )
 
-type postJobStruct struct {
+type returnJobStruct struct {
+	Image       string `json:"image"`
+	IsCompleted bool   `json:"isCompleted"`
+}
+
+type newJobStruct struct {
 	Title                string `json:"title"`
 	Description          string `json:"description"`
 	OriginalImage        string `json:"originalImage"`
 	AllowMultipleRunners bool   `json:"allowMultipleRunners"`
 }
 
-func newJob(s postJobStruct, author string) *state.Job {
+func newJob(s newJobStruct, author string) *state.Job {
 	time := time.Now().UnixNano()
 	return &state.Job{
 		ID:                   fmt.Sprintf("%d", time),
@@ -92,7 +97,7 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 		unsupportedMediaType(w)
 		return
 	}
-	var jobData postJobStruct
+	var jobData newJobStruct
 	err = json.Unmarshal(bodyBytes, &jobData)
 	if err != nil {
 		badRequest(w, err.Error())
@@ -146,13 +151,22 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 	delete(jobs, job.ID)
 	state.JobState.Write(jobs)
 
+	// remove all user references
+	users := state.UserState.Read()
+	for _, runner := range job.Runners {
+		u := users[runner]
+		u.Running = remove(u.Running, find(u.Running, job.ID))
+		users[runner] = u
+	}
+	state.UserState.Write(users)
+
 	// respond
 	w.Header().Add("Content-Type", "application/json")
 	w.Write([]byte(`{"message": "success"}`))
 }
 
-// PUT /jobs/{id}/checkout
-func putJobCheckout(w http.ResponseWriter, r *http.Request) {
+// PUT /jobs/{id}/take
+func putJobTake(w http.ResponseWriter, r *http.Request) {
 	state.LogRequest(r)
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
@@ -188,50 +202,74 @@ func putJobCheckout(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, id)))
 }
 
-// // PUT /jobs/{id}/checkin
-// func putJobCheckin(w http.ResponseWriter, r *http.Request) {
-// 	state.LogRequest(r)
-// 	// auth user
-//  user, ok := state.UserState.AuthRequest(r)
-// 	if !ok {
-// 		unauthorized(w)
-// 		return
-// 	}
+// PUT /jobs/{id}/return
+// checks back in the sent image and disassociates user from it
+func putJobReturn(w http.ResponseWriter, r *http.Request) {
+	state.LogRequest(r)
+	// auth user
+	user, ok := state.UserState.AuthRequest(r)
+	if !ok {
+		unauthorized(w)
+		return
+	}
 
-// 	// register runner within job
-// 	id := mux.Vars(r)["id"]
-// 	jobs := state.JobState.Read()
-// 	job, ok := jobs[id]
-// 	if !ok {
-// 		badRequest(w, "Id does not exist")
-// 		return
-// 	}
-// 	if job.Runner != username {
-// 		badRequest(w, "Your are not currently running this job")
-// 		return
-// 	}
-// 	job.Runner = ""
-// 	jobs[job.ID] = job
-// 	state.JobState.Write(jobs)
+	// read return image data
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		badRequest(w, err.Error())
+		return
+	}
+	ct := r.Header.Get("Content-Type")
+	if ct != "application/json" {
+		unsupportedMediaType(w)
+		return
+	}
+	var returnData returnJobStruct
+	err = json.Unmarshal(bodyBytes, &returnData)
+	if err != nil {
+		badRequest(w, err.Error())
+		return
+	}
 
-// 	// update user ref
-// 	for i, jobID := range user.Running {
-// 		if jobID != id {
-// 			continue
-// 		}
-// 		user.Running[i] = user.Running[len(user.Running)-1]
-// 		user.Running[len(user.Running)-1] = ""
-// 		user.Running = user.Running[:len(user.Running)-1]
-// 		break
-// 	}
-// 	users := state.UserState.Read()
-// 	users[username] = user
-// 	state.UserState.Write(users)
+	// find referenced job and user runner reference
+	id := mux.Vars(r)["id"]
+	jobs := state.JobState.Read()
+	job, ok := jobs[id]
+	if !ok {
+		badRequest(w, "Job with this id does not exist")
+		return
+	}
+	runnerIndex := find(job.Runners, user.Username)
+	if runnerIndex < 0 {
+		badRequest(w, "User is not listed as a runner for this resource")
+		return
+	}
 
-// 	// respond
-// 	w.Header().Add("Content-Type", "application/json")
-// 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, id)))
-// }
+	// append return image data to current job
+	if job.CompletedImage != "" {
+		badRequest(w, "This job has already been completed")
+		return
+	}
+	if returnData.IsCompleted {
+		job.CompletedImage = returnData.Image
+	} else {
+		job.PartialImages = append(job.PartialImages, returnData.Image)
+	}
+
+	// remove referenced job and user runner reference
+	job.Runners = remove(job.Runners, runnerIndex)
+	jobs[job.ID] = job
+	state.JobState.Write(jobs)
+	user.Running = remove(user.Running, find(user.Running, job.ID))
+	users := state.UserState.Read()
+	users[user.Username] = user
+	state.UserState.Write(users)
+
+	// respond
+	w.Header().Add("Content-Type", "application/json")
+	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, job.ID)))
+}
 
 func addJobSubrouter(r *mux.Router) {
 	jobRouter := r.PathPrefix("/jobs").Subrouter()
@@ -240,6 +278,6 @@ func addJobSubrouter(r *mux.Router) {
 	jobRouter.HandleFunc("", postJob).Methods(http.MethodPost)
 	jobRouter.HandleFunc("/{id}", getJob).Methods(http.MethodGet)
 	jobRouter.HandleFunc("/{id}", deleteJob).Methods(http.MethodDelete)
-	jobRouter.HandleFunc("/{id}/checkout", putJobCheckout).Methods(http.MethodPost)
+	jobRouter.HandleFunc("/{id}/checkout", putJobTake).Methods(http.MethodPost)
 	// jobRouter.HandleFunc("/{id}/checkin", putJobCheckin).Methods(http.MethodPut)
 }
