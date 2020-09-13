@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
+
+	"github.com/mfigurski80/DonateAPI/types"
 )
 
 type jobReader struct {
 	path  string
-	cache map[string]Job
+	cache map[string]types.Job
 	sync.Mutex
 }
 
@@ -19,11 +21,11 @@ func newJobsReader(p string) *jobReader {
 
 	return &jobReader{
 		path:  p,
-		cache: map[string]Job{},
+		cache: map[string]types.Job{},
 	}
 }
 
-func (r *jobReader) Read() map[string]Job {
+func (r *jobReader) Read() map[string]types.Job {
 	r.Lock()
 	defer r.Unlock()
 	if len(r.cache) > 0 {
@@ -35,17 +37,17 @@ func (r *jobReader) Read() map[string]Job {
 		panic(fmt.Sprintf("Error opening file '%s'", r.path))
 	}
 
-	var jobs map[string]Job
+	var jobs map[string]types.Job
 	json.Unmarshal(file, &jobs)
 	if len(jobs) == 0 {
-		jobs = map[string]Job{}
+		jobs = map[string]types.Job{}
 	}
 
 	r.cache = jobs
 	return jobs
 }
 
-func (r *jobReader) Write(jobs map[string]Job) {
+func (r *jobReader) Write(jobs map[string]types.Job) {
 	file, err := json.MarshalIndent(jobs, "", " ")
 	if err != nil {
 		panic(fmt.Sprintf("Error Marshaling jobs: %v", jobs))

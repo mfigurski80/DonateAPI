@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mfigurski80/DonateAPI/state"
+	"github.com/mfigurski80/DonateAPI/types"
 )
 
 // GET `/user` returns data on current user
@@ -51,14 +52,14 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 		unsupportedMediaType(w)
 		return
 	}
-	var newUserData postUserStruct
+	var newUserData types.PostUserStruct
 	err = json.Unmarshal(bodyBytes, &newUserData)
 	if err != nil {
 		badRequest(w, err.Error())
 		return
 	}
 
-	// change user
+	// update user
 	if !(newUserData.Username == user.Username || newUserData.Username == "") {
 		badRequest(w, "Username cannot be changed once set")
 		return

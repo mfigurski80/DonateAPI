@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"os"
 	"sync"
+
+	"github.com/mfigurski80/DonateAPI/types"
 )
 
 type userReader struct {
 	path string
 	sync.Mutex
-	cache map[string]User
+	cache map[string]types.User
 }
 
 func newUsersReader(p string) *userReader {
@@ -20,31 +22,31 @@ func newUsersReader(p string) *userReader {
 
 	return &userReader{
 		path:  p,
-		cache: map[string]User{},
+		cache: map[string]types.User{},
 	}
 }
 
-func (r *userReader) AuthUser(u string, p string) (User, bool) {
+func (r *userReader) AuthUser(u string, p string) (types.User, bool) {
 	users := r.Read()
 	user, ok := users[u]
 	if !ok {
-		return User{}, false
+		return types.User{}, false
 	}
 	if user.Password != HashPassword(p) {
-		return User{}, false
+		return types.User{}, false
 	}
 	return user, true
 }
 
-func (r *userReader) AuthRequest(req *http.Request) (User, bool) {
+func (r *userReader) AuthRequest(req *http.Request) (types.User, bool) {
 	username, pass, ok := req.BasicAuth()
 	if !ok {
-		return User{}, false
+		return types.User{}, false
 	}
 	return r.AuthUser(username, pass)
 }
 
-func (r *userReader) Read() map[string]User {
+func (r *userReader) Read() map[string]types.User {
 	r.Lock()
 	defer r.Unlock()
 	if len(r.cache) > 0 {
@@ -56,17 +58,17 @@ func (r *userReader) Read() map[string]User {
 		panic(fmt.Sprintf("Error opening file '%s'", r.path))
 	}
 
-	var users map[string]User
+	var users map[string]types.User
 	json.Unmarshal(file, &users)
 	if len(users) == 0 {
-		users = map[string]User{}
+		users = map[string]types.User{}
 	}
 
 	r.cache = users
 	return users
 }
 
-func (r *userReader) Write(users map[string]User) {
+func (r *userReader) Write(users map[string]types.User) {
 	file, err := json.MarshalIndent(users, "", " ")
 	if err != nil {
 		panic(fmt.Sprintf("Error marshaling json: %v", users))

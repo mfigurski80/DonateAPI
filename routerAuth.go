@@ -8,16 +8,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mfigurski80/DonateAPI/state"
+	"github.com/mfigurski80/DonateAPI/types"
 )
 
-type postUserStruct struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func newUser(u postUserStruct) *state.User {
-	return &state.User{
+func newUser(u types.PostUserStruct) *types.User {
+	return &types.User{
 		Username: u.Username,
 		Password: state.HashPassword(u.Password),
 		Authored: make([]string, 0),
@@ -41,7 +36,7 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user postUserStruct
+	var user types.PostUserStruct
 	err = json.Unmarshal(bodyBytes, &user)
 	if err != nil {
 		badRequest(w, err.Error())

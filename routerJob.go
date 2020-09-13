@@ -9,23 +9,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mfigurski80/DonateAPI/state"
+	"github.com/mfigurski80/DonateAPI/types"
 )
 
-type returnJobStruct struct {
-	Image       string `json:"image"`
-	IsCompleted bool   `json:"isCompleted"`
-}
-
-type newJobStruct struct {
-	Title                string `json:"title"`
-	Description          string `json:"description"`
-	OriginalImage        string `json:"originalImage"`
-	AllowMultipleRunners bool   `json:"allowMultipleRunners"`
-}
-
-func newJob(s newJobStruct, author string) *state.Job {
+func newJob(s types.NewJobStruct, author string) *types.Job {
 	time := time.Now().UnixNano()
-	return &state.Job{
+	return &types.Job{
 		ID:                   fmt.Sprintf("%d", time),
 		Author:               author,
 		Timestamp:            time,
@@ -97,7 +86,7 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 		unsupportedMediaType(w)
 		return
 	}
-	var jobData newJobStruct
+	var jobData types.NewJobStruct
 	err = json.Unmarshal(bodyBytes, &jobData)
 	if err != nil {
 		badRequest(w, err.Error())
@@ -225,7 +214,7 @@ func putJobReturn(w http.ResponseWriter, r *http.Request) {
 		unsupportedMediaType(w)
 		return
 	}
-	var returnData returnJobStruct
+	var returnData types.ReturnJobStruct
 	err = json.Unmarshal(bodyBytes, &returnData)
 	if err != nil {
 		badRequest(w, err.Error())
@@ -278,6 +267,6 @@ func addJobSubrouter(r *mux.Router) {
 	jobRouter.HandleFunc("", postJob).Methods(http.MethodPost)
 	jobRouter.HandleFunc("/{id}", getJob).Methods(http.MethodGet)
 	jobRouter.HandleFunc("/{id}", deleteJob).Methods(http.MethodDelete)
-	jobRouter.HandleFunc("/{id}/checkout", putJobTake).Methods(http.MethodPost)
-	// jobRouter.HandleFunc("/{id}/checkin", putJobCheckin).Methods(http.MethodPut)
+	jobRouter.HandleFunc("/{id}/take", putJobTake).Methods(http.MethodPost)
+	jobRouter.HandleFunc("/{id}/return", putJobReturn).Methods(http.MethodPut)
 }
