@@ -25,7 +25,7 @@ func newJob(s types.NewJobStruct, author string) *types.Job {
 	}
 }
 
-// GET `/jobs` returns list of all *active* jobs (waiting for runners)
+// GET `/job` returns list of all *active* jobs (waiting for runners)
 func getJobs(w http.ResponseWriter, r *http.Request) {
 	jobs := state.JobState.Read()
 
@@ -38,7 +38,7 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-// GET `/jobs/{id}` returns job with given id
+// GET `/job/{id}` returns job with given id
 func getJob(w http.ResponseWriter, r *http.Request) {
 	// find referenced job
 	id := mux.Vars(r)["id"]
@@ -61,7 +61,7 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-// POST `/jobs` creates a new job with given data
+// POST `/job` creates a new job with given data
 func postJob(w http.ResponseWriter, r *http.Request) {
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
@@ -111,7 +111,7 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "createdId": "%s"}`, job.ID)))
 }
 
-// DELETE /jobs/{id}
+// DELETE /job/{id}
 func deleteJob(w http.ResponseWriter, r *http.Request) {
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
@@ -151,7 +151,7 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"message": "success"}`))
 }
 
-// PUT /jobs/{id}/take
+// PUT /job/{id}/take
 func putJobTake(w http.ResponseWriter, r *http.Request) {
 	// auth user
 	user, ok := state.UserState.AuthRequest(r)
@@ -187,7 +187,7 @@ func putJobTake(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf(`{"message": "success", "checkedId": "%s"}`, id)))
 }
 
-// PUT /jobs/{id}/return
+// PUT /job/{id}/return
 // checks back in the sent image and disassociates user from it
 func putJobReturn(w http.ResponseWriter, r *http.Request) {
 	// auth user
@@ -256,7 +256,7 @@ func putJobReturn(w http.ResponseWriter, r *http.Request) {
 }
 
 func addJobSubrouter(r *mux.Router) {
-	jobRouter := r.PathPrefix("/jobs").Subrouter()
+	jobRouter := r.PathPrefix("/job").Subrouter()
 
 	jobRouter.HandleFunc("", getJobs).Methods(http.MethodGet)
 	jobRouter.HandleFunc("", postJob).Methods(http.MethodPost)
