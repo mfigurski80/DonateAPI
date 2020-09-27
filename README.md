@@ -32,18 +32,18 @@ A singlar user is a datum with:
 ### Users
 
 * [x] `POST /register`
-* [x] `GET /user`
-* [x] `PUT /user`
-* [x] `DELETE /user`
+* [ ] `GET /{userId}`
+* [ ] `PUT /{userId}`
+* [ ] `DELETE /{userId}`
 
 ### Jobs
 
-* [x] `GET /job`
-* [x] `POST /job`
-* [x] `GET /job/{id}`
-* [x] `DELETE /job/{id}`
-* [x] `PUT /job/{id}/take`
-* [x] `PUT /job/{id}/return`
+* [ ] `GET /jobs`
+* [ ] `POST /jobs`
+* [ ] `GET /{userId}/{jobId}`
+* [ ] `DELETE /{userId}/{jobId}`
+* [ ] `PUT /{userId}/{jobId}/take`
+* [ ] `PUT /{userId}/{jobId}/return`
 
 ## Building
 
