@@ -52,3 +52,8 @@ func respondUnauthorized(w http.ResponseWriter, message string) {
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write(makeFailResponse(message))
 }
+
+func respondNotFound(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusNotFound)
+	w.Write(makeFailResponse(message))
+}

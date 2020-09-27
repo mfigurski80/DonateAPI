@@ -112,4 +112,6 @@ func addUserSubrouter(r *mux.Router) {
 	userRouter.HandleFunc("", getUser).Methods(http.MethodGet)
 	userRouter.HandleFunc("", putUser).Methods(http.MethodPut)
 	userRouter.HandleFunc("", deleteUser).Methods(http.MethodDelete)
+
+	addUserJobSubrouter(userRouter)
 }
