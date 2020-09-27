@@ -12,7 +12,7 @@ func Start(addr string) {
 
 	r := mux.NewRouter()
 	addAuthSubrouter(r)
-	// addUserSubrouter(r)
+	addUserSubrouter(r)
 	// addJobSubrouter(r)
 	r.Use(loggingMiddleware)
 

@@ -39,14 +39,14 @@ func ReadUsers() (*UserMap, error) {
 		panic(err)
 	}
 
-	var users *UserMap
-	err = json.Unmarshal(file, users)
+	var users UserMap
+	err = json.Unmarshal(file, &users)
 	if err != nil {
-		users = &UserMap{}
+		return nil, err
 	}
 
-	userCache.c = users
-	return users, nil
+	userCache.c = &users
+	return &users, nil
 }
 
 // WriteUsers writes given user map to file
