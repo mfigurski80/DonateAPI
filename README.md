@@ -32,9 +32,9 @@ A singlar user is a datum with:
 ### Users
 
 * [x] `POST /register`
-* [ ] `GET /{userId}`
-* [ ] `PUT /{userId}`
-* [ ] `DELETE /{userId}`
+* [x] `GET /{userId}`
+* [x] `PUT /{userId}`
+* [x] `DELETE /{userId}`
 
 ### Jobs
 

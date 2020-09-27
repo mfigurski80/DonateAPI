@@ -25,7 +25,7 @@ func ReadJob(username string, title string) (Job, error) {
 		return Job{}, err
 	}
 
-	user, ok := (*users)[username]
+	user, ok := users[username]
 	if !ok {
 		return Job{}, fmt.Errorf("Username '%s' not found", username)
 	}
@@ -45,13 +45,13 @@ func WriteJob(job Job) error {
 		return err
 	}
 
-	user, ok := (*users)[job.Author]
+	user, ok := users[job.Author]
 	if !ok {
 		return fmt.Errorf("Username '%s' not found", job.Author)
 	}
 
 	user.Authored[job.Title] = job
-	(*users)[job.Author] = user
+	users[job.Author] = user
 	WriteUsers(users)
 
 	return nil

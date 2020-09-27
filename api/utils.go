@@ -42,7 +42,7 @@ func authRequest(w http.ResponseWriter, r *http.Request) (store.User, bool) {
 		return store.User{}, false
 	}
 
-	user, ok := (*users)[username]
+	user, ok := users[username]
 	if !ok {
 		respondUnauthorized(w, fmt.Sprintf("User '%s' does not exist", username))
 		return store.User{}, false

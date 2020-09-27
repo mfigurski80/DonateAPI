@@ -17,8 +17,6 @@ func makeUser(u postUserStruct) *store.User {
 	return &store.User{
 		Username: u.Username,
 		Password: store.HashPassword(u.Password),
-		Authored: store.JobMap{},
-		Running:  []string{},
 	}
 }
 
@@ -37,12 +35,12 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 		respondInternalServerError(w, err)
 		return
 	}
-	_, ok = (*users)[postUser.Username]
+	_, ok = users[postUser.Username]
 	if ok {
 		respondUnauthorized(w, fmt.Sprintf("user %s already exists", postUser.Username))
 		return
 	}
-	(*users)[postUser.Username] = *makeUser(postUser)
+	users[postUser.Username] = *makeUser(postUser)
 	err = store.WriteUsers(users)
 	if err != nil {
 		respondInternalServerError(w, err)
