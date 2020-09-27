@@ -110,4 +110,6 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 func addUserSubrouter(r *mux.Router) {
 	userRouter := r.PathPrefix("/{userId}").Subrouter()
 	userRouter.HandleFunc("", getUser).Methods(http.MethodGet)
+	userRouter.HandleFunc("", putUser).Methods(http.MethodPut)
+	userRouter.HandleFunc("", deleteUser).Methods(http.MethodDelete)
 }
