@@ -1,20 +1,7 @@
 package main
 
-import (
-	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/mfigurski80/DonateAPI/state"
-)
+import "github.com/mfigurski80/DonateAPI/api"
 
 func main() {
-
-	r := mux.NewRouter()
-	addAuthSubrouter(r)
-	addUserSubrouter(r)
-	addJobSubrouter(r)
-	r.Use(loggingMiddleware)
-
-	state.Log("Initialized. Serving on http://localhost:8080")
-	http.ListenAndServe(":8080", r)
+	api.Start(":8080")
 }

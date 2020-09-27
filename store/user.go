@@ -42,9 +42,6 @@ func ReadUsers() (*UserMap, error) {
 	var users *UserMap
 	err = json.Unmarshal(file, users)
 	if err != nil {
-		return nil, err
-	}
-	if len(*users) == 0 {
 		users = &UserMap{}
 	}
 

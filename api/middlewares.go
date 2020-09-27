@@ -1,11 +1,10 @@
-package main
+package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/mfigurski80/DonateAPI/state"
+	"github.com/mfigurski80/DonateAPI/store"
 )
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -14,6 +13,6 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		end := time.Now().UnixNano() / int64(time.Millisecond)
 
-		state.Log(fmt.Sprintf("%s %s (+%vms)", r.Method, r.URL.Path, end-start))
+		store.L.Printf("%s %s (+%vms)", r.Method, r.URL.Path, end-start)
 	})
 }
