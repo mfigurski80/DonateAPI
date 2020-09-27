@@ -54,3 +54,13 @@ func authRequest(w http.ResponseWriter, r *http.Request) (store.User, bool) {
 
 	return user, true
 }
+
+func removeJobReferenceListValue(arr []store.JobReference, item store.JobReference) []store.JobReference {
+	for i, v := range arr {
+		if v == item {
+			arr[i] = arr[len(arr)-1]
+			return arr[:len(arr)-1]
+		}
+	}
+	return arr
+}

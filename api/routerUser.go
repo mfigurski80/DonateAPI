@@ -97,7 +97,9 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		if job.Runner == "" {
 			continue
 		}
-		// TODO
+		runner := users[job.Runner]
+		runner.Running = removeJobReferenceListValue(runner.Running, store.JobReference{Title: job.Title, User: job.Author})
+		users[job.Runner] = runner
 	}
 	err = store.WriteUsers(users)
 
