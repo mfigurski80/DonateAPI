@@ -38,7 +38,7 @@ A singlar user is a datum with:
 
 ### Jobs
 
-* [ ] `GET /jobs`
+* [x] `GET /jobs`
 * [ ] `POST /jobs`
 * [ ] `GET /{userId}/{jobId}`
 * [ ] `DELETE /{userId}/{jobId}`

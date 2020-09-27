@@ -12,8 +12,8 @@ func Start(addr string) {
 
 	r := mux.NewRouter()
 	addAuthSubrouter(r)
+	addJobSubrouter(r)
 	addUserSubrouter(r)
-	// addJobSubrouter(r)
 	r.Use(loggingMiddleware)
 
 	store.Log("Initialized. Serving on http://0.0.0.0" + addr)
