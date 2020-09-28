@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/mfigurski80/DonateAPI/store"
@@ -10,11 +9,10 @@ import (
 
 // Start runs server on given addr and port
 func Start(addr string) {
-	file, err := os.OpenFile("./data/users.json", os.O_RDONLY|os.O_CREATE, 0666)
+	err := store.Init("./data")
 	if err != nil {
 		panic(err)
 	}
-	file.Close()
 
 	r := mux.NewRouter()
 	addAuthSubrouter(r)

@@ -23,8 +23,6 @@ type User struct {
 // UserMap is a map of usernames to user data
 type UserMap map[string]User
 
-var userPath = "./data/users.json"
-
 var userCache = struct {
 	c UserMap
 	sync.Mutex
@@ -40,7 +38,7 @@ func ReadUsers() (UserMap, error) {
 		return userCache.c, nil
 	}
 
-	file, err := ioutil.ReadFile(userPath)
+	file, err := ioutil.ReadFile(dataPath)
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +63,7 @@ func WriteUsers(users UserMap) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(userPath, file, 0644)
+	err = ioutil.WriteFile(dataPath, file, 0644)
 	if err != nil {
 		panic(err)
 	}
