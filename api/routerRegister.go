@@ -24,8 +24,6 @@ func makeUser(u postUserStruct) *store.User {
 
 // POST `/register` creates a new user
 func handleRegister(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-
 	var postUser postUserStruct
 	ok := unmarshalRequestBody(w, r, &postUser)
 	if !ok { // response is handled
