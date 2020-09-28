@@ -20,6 +20,8 @@ func Start(addr string) {
 	addAuthSubrouter(r)
 	addJobSubrouter(r)
 	addUserSubrouter(r)
+
+	r.Use(jsonResponseMiddleware)
 	r.Use(loggingMiddleware)
 
 	store.Log("Initialized. Serving on http://0.0.0.0" + addr)
