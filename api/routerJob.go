@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mfigurski80/DonateAPI/store"
@@ -20,6 +22,7 @@ func makeJob(j postJobStruct, u store.User) *store.Job {
 		Description:   j.Description,
 		OriginalImage: j.Image,
 		Author:        u.Username,
+		Timestamp:     time.Now().Unix(),
 	}
 }
 
@@ -34,7 +37,7 @@ func getJobs(w http.ResponseWriter, r *http.Request) {
 	var jobs = make([]store.Job, 0)
 	for _, user := range users {
 		for _, job := range user.Authored {
-			if job.Runner == "" {
+			if job.Runner == "" && job.CompletedImage == "" {
 				jobs = append(jobs, job)
 			}
 		}
@@ -62,19 +65,25 @@ func postJob(w http.ResponseWriter, r *http.Request) {
 
 	// read body
 	var postJob postJobStruct
-	ok = unmarshalRequestBody(w, r, postJob)
+	ok = unmarshalRequestBody(w, r, &postJob)
 	if !ok {
 		return
 	}
 
 	// implement changes
-	job := makeJob(postJob, user)
+	job := *makeJob(postJob, user)
+	// TODO: check if job.Title is acceptable string (doesnt contain `/` or such)
 	users, err := store.ReadUsers()
 	if err != nil {
 		respondInternalServerError(w, err)
 		return
 	}
-	users[user.Username].Authored[job.Title] = *job
+	_, exists := users[user.Username].Authored[job.Title]
+	if exists {
+		respondBadRequest(w, fmt.Sprintf("job '%s' already exists on user '%s'", job.Title, user.Username))
+		return
+	}
+	users[user.Username].Authored[job.Title] = job
 	err = store.WriteUsers(users)
 	if err != nil {
 		respondInternalServerError(w, err)

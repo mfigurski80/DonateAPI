@@ -45,7 +45,7 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 	// read body
 	var postUser postUserStruct
-	ok = unmarshalRequestBody(w, r, postUser)
+	ok = unmarshalRequestBody(w, r, &postUser)
 	if !ok {
 		return
 	}

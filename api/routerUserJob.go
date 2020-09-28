@@ -10,12 +10,11 @@ import (
 )
 
 type returnJobStruct struct {
-	Image       string `json:"image"`
-	IsCompleted bool   `json:"isCompleted"`
+	Image string `json:"image"`
 }
 
 func makeReturnedJob(data returnJobStruct, job *store.Job) *store.Job {
-	if data.IsCompleted {
+	if data.Image != "" {
 		(*job).CompletedImage = data.Image
 	}
 	(*job).Runner = ""
@@ -110,6 +109,10 @@ func takeJob(w http.ResponseWriter, r *http.Request) {
 		respondBadRequest(w, fmt.Sprintf("job '%s' is already being run by user '%s'", jobID, job.Runner))
 		return
 	}
+	if job.CompletedImage != "" {
+		respondBadRequest(w, fmt.Sprintf("job '%s' is already completed", jobID))
+		return
+	}
 	job.Runner = rUser.Username
 	aUser.Authored[jobID] = job
 	rUser.Running = append(rUser.Running, store.JobReference{User: job.Author, Title: job.Title})
@@ -162,12 +165,14 @@ func returnJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if job.Runner != rUser.Username {
-		respondUnauthorized(w, fmt.Sprintf("user '%s' is not currently running this job", job.Runner))
+		respondUnauthorized(w, fmt.Sprintf("user '%s' is not currently running this job", rUser.Username))
 		return
 	}
 	makeReturnedJob(data, &job)
 	aUser.Authored[jobID] = job
-	users[userID] = aUser
+	rUser.Running = removeJobReferenceListValue(rUser.Running, store.JobReference{User: job.Author, Title: job.Title})
+	users[aUser.Username] = aUser
+	users[rUser.Username] = rUser
 	err = store.WriteUsers(users)
 	if err != nil {
 		respondInternalServerError(w, err)

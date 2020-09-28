@@ -48,6 +48,9 @@ func ReadUsers() (UserMap, error) {
 	var users UserMap
 	err = json.Unmarshal(file, &users)
 	if err != nil {
+		if len(file) == 0 {
+			return UserMap{}, nil
+		}
 		return nil, err
 	}
 
@@ -57,7 +60,7 @@ func ReadUsers() (UserMap, error) {
 
 // WriteUsers writes given user map to file
 func WriteUsers(users UserMap) error {
-	file, err := json.Marshal(users)
+	file, err := json.MarshalIndent(users, "", "  ")
 	if err != nil {
 		return err
 	}

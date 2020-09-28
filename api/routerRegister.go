@@ -17,6 +17,8 @@ func makeUser(u postUserStruct) *store.User {
 	return &store.User{
 		Username: u.Username,
 		Password: store.HashPassword(u.Password),
+		Authored: make(store.JobMap, 0),
+		Running:  []store.JobReference{},
 	}
 }
 
