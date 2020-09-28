@@ -12,12 +12,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       
-    - name: Get Latest Release
-      id: latest_version
-      uses: abatilo/release-info-action@v1.1.0
-      
     - name: Build the Docker image
-      run: docker build . -t donate-api -t ${{ secrets.DOCKERHUB_USERNAME }}/donate-api:${{ steps.latest_version.outputs.latest_tag }}
+      run: docker build . -t donate-api -t ${{ secrets.DOCKERHUB_USERNAME }}/donate-api:$(date +'%s')
     
     - name: Login to DockerHub
       uses: docker/login-action@v1 
