@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -17,7 +18,7 @@ func TestStore(t *testing.T) {
 	}
 
 	rand.Seed(time.Now().UnixNano())
-	id := string(rand.Uint64())
+	id := fmt.Sprint(rand.Uint64())
 	user := store.User{
 		Username: id,
 	}
