@@ -47,6 +47,10 @@ A singlar user is a datum with:
 * [x] `PUT /{userId}/{jobId}/take`
 * [x] `PUT /{userId}/{jobId}/return`
 
+## Testing
+
+`go test ./test`
+
 ## Building
 
 `go build -o main .`
