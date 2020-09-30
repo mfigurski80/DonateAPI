@@ -21,18 +21,24 @@ var apiTests = []struct {
 	expectStatus  int
 	expectContent string
 }{
-	{"POST", "/register", "", "", `{"username":"TESTUSERA", "password":"A"}`,
-		http.StatusOK, `^{.*"success": ?true.*"alteredId": ?"TESTUSERA".*}`},
-	{"GET", "/TESTUSERA", "TESTUSERA", "A", "",
-		http.StatusOK, `^{.*"username": ?"TESTUSERA".*"authored": ?{}.*"running":.*}`},
+	{"POST", "/register", "", "", `{"username":"TESTUSER", "password":"A"}`,
+		http.StatusOK, `^{.*"success": ?true.*"alteredId": ?"TESTUSER".*}`},
+	{"GET", "/TESTUSER", "TESTUSER", "A", "",
+		http.StatusOK, `^{.*"username": ?"TESTUSER".*"authored": ?{}.*"running":.*}`},
 	{"GET", "/job", "", "", "",
 		http.StatusOK, `^\[\]`},
-	{"POST", "/job", "TESTUSERA", "A", `{"title":"TESTJOBA", "description":"TESTDESCA", "image": "TESTIMGA"}`,
-		http.StatusOK, `^{.*"success": ?true.*"alteredId": ?"TESTJOBA".*}`},
+	{"POST", "/job", "TESTUSER", "A", `{"title":"TESTJOB", "description":"TESTDESC", "image": "TESTIMG"}`,
+		http.StatusOK, `^{.*"success": ?true.*"alteredId": ?"TESTJOB".*}`},
 	{"GET", "/job", "", "", "",
-		http.StatusOK, `^\[.*{.*"title": ?"TESTJOBA".*"author": ?"TESTUSERA".*}.*\]`},
-	{"GET", "/TESTUSERA", "TESTUSERA", "A", "",
-		http.StatusOK, `^{.*"username": ?"TESTUSERA".*"authored": ?{.*"TESTJOBA":.*}.*}`},
+		http.StatusOK, `^\[.*{.*"title": ?"TESTJOB".*"author": ?"TESTUSER".*}.*\]`},
+	{"GET", "/TESTUSER", "TESTUSER", "A", "",
+		http.StatusOK, `^{.*"username": ?"TESTUSER".*"authored": ?{.*"TESTJOB":.*}.*}`},
+	{"GET", "/TESTUSER/TESTJOB", "", "", "",
+		http.StatusOK, `^{.*"title": ?"TESTJOB".*}`},
+	{"DELETE", "/TESTUSER/TESTJOB", "TESTUSER", "A", "",
+		http.StatusOK, `^{.*"success": ?true.*}`},
+	{"DELETE", "/TESTUSER", "TESTUSER", "A", "",
+		http.StatusOK, `^{.*"success": ?true.*}`},
 }
 
 var client = http.Client{
