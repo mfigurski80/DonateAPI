@@ -37,6 +37,8 @@ var apiTests = []struct {
 		http.StatusOK, `^{.*"title": ?"TESTJOB".*}`},
 	{"DELETE", "/TESTUSER/TESTJOB", "TESTUSER", "A", "",
 		http.StatusOK, `^{.*"success": ?true.*}`},
+	{"GET", "/TESTUSER", "TESTUSER", "A", "",
+		http.StatusOK, `^{.*"authored": ?{ ?}.*}`},
 	{"DELETE", "/TESTUSER", "TESTUSER", "A", "",
 		http.StatusOK, `^{.*"success": ?true.*}`},
 }
