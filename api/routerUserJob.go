@@ -58,8 +58,7 @@ func deleteJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// implement changes
-	_, ok = user.Authored[jobID]
-	if !ok {
+	if _, ok = user.Authored[jobID]; !ok {
 		respondNotFound(w, fmt.Sprintf("job '%s' not found on user '%s'", jobID, userID))
 		return
 	}

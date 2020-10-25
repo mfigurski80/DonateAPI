@@ -87,7 +87,6 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		respondInternalServerError(w, err)
 		return
 	}
-	delete(users, user.Username)
 	for _, ref := range user.Running { // remove references to running
 		job := users[ref.User].Authored[ref.Title]
 		job.Runner = ""
@@ -101,6 +100,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		runner.Running = removeJobReferenceListValue(runner.Running, store.JobReference{Title: job.Title, User: job.Author})
 		users[job.Runner] = runner
 	}
+	delete(users, user.Username) // remove user
 	err = store.WriteUsers(users)
 
 	// respond
