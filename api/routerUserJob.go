@@ -31,11 +31,13 @@ func getJob(w http.ResponseWriter, r *http.Request) {
 	job, err := store.ReadJob(userID, jobID)
 	if err != nil {
 		respondNotFound(w, err.Error())
+		return
 	}
 
 	bytes, err := json.Marshal(job)
 	if err != nil {
 		respondInternalServerError(w, err)
+		return
 	}
 
 	w.Write(bytes)
