@@ -11,19 +11,37 @@ Works on a distributed system built around transferring docker images.
 
 ### Users
 
-* [x] `POST /register`
+* [x] `POST /register` <- {username, password}
+	- creates a new user entry
 * [x] `GET /{userId}`
-* [x] `PUT /{userId}`
+	- gets user if matches auth
+	- requires auth
+* [x] `PUT /{userId}` <- {password}
+	- updates password of user
+	- requires auth 
 * [x] `DELETE /{userId}`
+	- removes user entry
+	- requires auth
 
 ### Jobs
 
 * [x] `GET /job`
-* [x] `POST /job`
+	- gets list of jobs without runner
+* [x] `POST /job` <- {title, description, image}
+	- creates new job entry
+	- requires auth
 * [x] `GET /{userId}/{jobId}`
+	- gets job entry by given user and id
 * [x] `DELETE /{userId}/{jobId}`
-* [x] `PUT /{userId}/{jobId}/take`
-* [x] `PUT /{userId}/{jobId}/return`
+	- removes job entry by given user and id
+	- requires auth
+* [x] `PUT /{userId}/{jobId}/take` <- {}
+	- marks self as runner of job entry by given user and id
+	- requires auth
+* [x] `PUT /{userId}/{jobId}/return` <- {image}
+	- removes runner reference in job entry
+	- sets completed image in job entry if image ref is given
+	- requires auth
 
 ## Testing
 
