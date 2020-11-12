@@ -13,7 +13,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 		end := time.Now().UnixNano() / int64(time.Millisecond)
 
-		store.L.Printf("%s %s (+%vms)", r.Method, r.URL.Path, end-start)
+		store.L.Printf("[%v] %s %s (+%vms) ", r.RemoteAddr, r.Method, r.URL.Path, end-start)
 	})
 }
 
